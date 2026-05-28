@@ -20,7 +20,7 @@
 
             <div class="card-header">
                 Категория:
-                <a href="{% url 'category' item.category.pk %}">
+                <a href="{{ item.category.get_absolute_url }}">
                     {{ item.category }}
                 </a>
             </div>
@@ -50,7 +50,7 @@
                             {{ item.content|safe|linebreaks|truncatewords:50 }}
                         </p>
 
-                        <a href="#"
+                        <a href="{{item.get_absolute_url}}"
                            class="btn btn-primary">
                            Read more...
                         </a>
