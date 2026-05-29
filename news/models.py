@@ -40,3 +40,11 @@ class News(models.Model):
         verbose_name = 'Новость'
         verbose_name_plural = 'Новости'
         ordering = ['-created_at']
+
+class Comment(models.Model):
+    author = models.CharField(max_length=100, verbose_name='Автор')
+    email = models.EmailField(verbose_name='Email')
+    text = models.TextField(verbose_name='Комментарий')
+
+    def __str__(self):
+        return self.author

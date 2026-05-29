@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Добавление комментария
+
+{% if success %}
+<div class="alert alert-success">
+    Комментарий успешно отправлен!
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'inc/_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h1>Добавление комментария</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">
+        Отправить
+    </button>
+</form>
+
+{% endblock %}

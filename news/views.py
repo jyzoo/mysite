@@ -1,10 +1,11 @@
 from gc import get_objects
-
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-
 from .models import News, Category
+from .forms import NewsForm
+from .forms import CommentForm
+
 
 def index(request):
     news = News.objects.all()
@@ -38,6 +39,45 @@ def view_news(request, news_id):
                   'news/view_news.html',
                   context=context)
 
+def add_news(request):
+    if request.method == 'POST':
+        form = NewsForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            news = form.save()
+            return redirect(news)
+
+    else:
+        form = NewsForm()
+
+    return render(
+        request,
+        'news/add_news.html',
+        {'form': form}
+    )
+
+
 
     return render(request, 'news/view_news.html', {'news_item': news_item})
 
+def add_comment(request):
+    success = False
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+
+        if form.is_valid():
+            success = True
+            form = CommentForm()  # очистить форму
+
+    else:
+        form = CommentForm()
+
+    return render(
+        request,
+        'news/add_comment.html',
+        {
+            'form': form,
+            'success': success
+        }
+    )

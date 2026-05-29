@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import News, Category
+from .models import Comment
 
 class NewsAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'category', 'created_at', 'updated_at', 'is_published']
@@ -15,4 +16,5 @@ class CategoryAdmin(admin.ModelAdmin):
 
 admin.site.register(News, NewsAdmin)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(Comment)
 
