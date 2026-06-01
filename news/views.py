@@ -1,4 +1,6 @@
 from gc import get_objects
+
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -7,11 +9,17 @@ from .forms import NewsForm
 from .forms import CommentForm
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
+from .utils import Mymixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 
-class CreateNews(CreateView):
+
+
+class CreateNews(LoginRequiredMixin, CreateView):
     form_class = NewsForm
     template_name = 'news/add_news.html'
     sucess_url = reverse_lazy('home')
+    login_url = '/admin/'
 
 
 class View_News(DetailView):
@@ -19,25 +27,41 @@ class View_News(DetailView):
     context_object_name = 'news_item'
 
 
-class HomeNews(ListView):
+class HomeNews(Mymixin, ListView):
     model = News
     template_name = 'news/home_news_list.html'
     context_object_name = 'news'
+    mixin_prop = 'hello world'
+    paginate_by = 5
     #extra_context = {'titlel: 'Главная'}
 
-def get_context_data(self, *, object_list=None, **kwargs):
-    context = super().get_context_data(**kwargs)
-    context['title'] = Category.objects.get(pk=self.kwargs['category_id'])
-    return context
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.get_upper('Главная страница')
+        context['mixin_prop'] = self.get_prop()
+        return context
 
-class NewsByCategory(ListView):
+    def get_queryset(self):
+        return News.objects.filter(is_published=True).select_related('category')
+
+
+class NewsByCategory(Mymixin, ListView):
     model = News
-    template_name = 'news/news_list.html'
+    template_name = 'news/home_news_list.html'
     context_object_name = 'news'
     allow_empty = False
+    paginate_by = 2
 
-def get_queryset(self):
-    return News.objects.filter(category_id=self.kwargs['category_id'], is_published=True)
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # context['title'] = Category.objects.get(pk=self.kwargs['category_id'])
+        context['title'] = self.get_upper(Category.objects.get(pk=self.kwargs['pk']))
+        return context
+
+    def get_queryset(self):
+        return News.objects.filter(category_id=self.kwargs['pk'], is_published=True).select_related('category')
+
+
 
 class CategoryList(ListView):
     model = Category
@@ -69,6 +93,13 @@ def get_category(request, category_id):
 
     category=Category.objects.get(pk=category_id)
     return render(request, 'news/category.html', {'news': news, 'category': category})
+
+def test(request):
+    objects = ["john1", "paul2", "george3", "ringo4", "john5", "paul6", "george7"]
+    paginator = Paginator(objects, 2)
+    page_num = request.GET.get('page', 1)
+    page_objects = paginator.get_page(page_num)
+    return render(request, 'news/test.html', {'page_obj': page_objects})
 
 def view_news(request, news_id):
     news_item = get_object_or_404(News, pk=news_id)
@@ -115,12 +146,23 @@ def add_comment(request):
     else:
         form = CommentForm()
 
-    return render(
-        request,
-        'news/add_comment.html',
-        {
-            'form': form,
-            'success': success
-        }
-    )
+    return render(request, 'news/add_comment.html', {'form': form})
+
+def home(request):
+    news = News.objects.filter(
+            is_published=True
+    ).select_related('category')
+
+    paginator = Paginator(news, 5)
+
+    page_num = request.GET.get('page', 1)
+    page_objects = paginator.get_page(page_num)
+
+    context = {
+        'news': page_objects.object_list,
+        'page_obj': page_objects,
+        'title': 'Главная страница'
+    }
+
+    return render(request, 'news/home_news_list.html', context)
 
