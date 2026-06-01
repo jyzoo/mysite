@@ -7,6 +7,8 @@ from news.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('captcha/', include('captcha.urls')),
     path('news/', include('news.urls')),
 ]
 

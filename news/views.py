@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from .models import News, Category
-from .forms import NewsForm
+from .forms import NewsForm, ContactForm
 from .forms import CommentForm
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
@@ -94,12 +94,18 @@ def get_category(request, category_id):
     category=Category.objects.get(pk=category_id)
     return render(request, 'news/category.html', {'news': news, 'category': category})
 
-def test(request):
-    objects = ["john1", "paul2", "george3", "ringo4", "john5", "paul6", "george7"]
-    paginator = Paginator(objects, 2)
-    page_num = request.GET.get('page', 1)
-    page_objects = paginator.get_page(page_num)
-    return render(request, 'news/test.html', {'page_obj': page_objects})
+def contact(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+
+        if form.is_valid():
+            print(form.cleaned_data)
+    else:
+        form = ContactForm()
+
+    return render(request,
+                  'news/contact.html',
+                  {'form': form})
 
 def view_news(request, news_id):
     news_item = get_object_or_404(News, pk=news_id)
